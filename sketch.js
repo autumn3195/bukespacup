@@ -6,7 +6,7 @@ let showResult = false; // 정답 텍스트 표시 여부 상태 변수
 let btn;            // 정답 확인/가리기 버튼 객체
 
 function setup() {
-  createCanvas(1000, 800);
+  createCanvas(windowWidth, windowHeight);
 
   // 사용할 색상 팔레트 정의
   let colors = [
