@@ -1,3 +1,7 @@
+/**
+ * 틀린 색 찾기 게임 - 단색 모드 구현 버전
+ */
+
 let leftGrid = [];  
 let rightGrid = []; 
 let rows = 4, cols = 4;           
@@ -11,14 +15,11 @@ let modeBtn1, modeBtn2, sizeBtns = [];
 function setup() {
   createCanvas(windowWidth, windowHeight);
   
-  // 1. 초기 환경 설정 (Default: 알록달록 6색, 4x4)
+  // 초기 실행: 알록달록 모드
   updatePalette('colorful');
   initGrid('all');
 
-  // 2. 상단 메뉴 버튼 생성
   createMenuButtons();
-
-  // 3. 하단 컨트롤 버튼 생성
   setupControlButtons();
   positionButtons();
 }
@@ -28,19 +29,35 @@ function setup() {
  */
 
 function updatePalette(mode) {
-  let fullPalette;
-  
+  const baseColors = [
+    { name: '빨강', h: 0, s: 80 },
+    { name: '초록', h: 120, s: 80 },
+    { name: '파랑', h: 220, s: 80 },
+    { name: '노랑', h: 60, s: 80 },
+    { name: '보라', h: 280, s: 80 },
+    { name: '하양', h: 0, s: 0 }
+  ];
+
   if (mode === 'colorful') {
-    // 알록달록 모드: 6가지 서로 다른 색상
-    fullPalette = ['#FF4B4B', '#4BFF4B', '#4B4BFF', '#FFFF4B', '#FF4BFF', '#FFFFFF'];
+    // 알록달록 모드: 기존의 6가지 뚜렷한 색상
+    colors = ['#FF4B4B', '#4BFF4B', '#4B4BFF', '#FFFF4B', '#FF4BFF', '#FFFFFF'];
     currentColorMode = "알록달록";
   } else if (mode === 'monochrome') {
-    // 단색 모드: (추후 구현 예정 - 현재는 알록달록과 동일하게 설정하거나 비워둠)
-    fullPalette = ['#FF4B4B', '#4BFF4B', '#4B4BFF', '#FFFF4B', '#FF4BFF', '#FFFFFF'];
-    currentColorMode = "단색 모드 (준비중)";
+    // 단색 모드: 6가지 기준 색상 중 하나를 랜덤 선택
+    let picked = random(baseColors);
+    currentColorMode = `단색 모드 (${picked.name})`;
+    
+    // 선택된 색상의 밝기(Brightness)만 6단계로 조절하여 팔레트 생성
+    colors = [];
+    colorMode(HSB, 360, 100, 100); // 색상 계산을 위해 HSB 모드 사용
+    for (let i = 0; i < 6; i++) {
+      // 밝기를 30%에서 100%까지 6단계로 나눔
+      let b = map(i, 0, 5, 30, 100);
+      let c = color(picked.h, picked.s, b);
+      colors.push(c.toString('#rrggbb')); // 다시 Hex 문자열로 변환하여 저장
+    }
+    colorMode(RGB, 255); // 다시 기본 RGB 모드로 복구
   }
-  
-  colors = fullPalette.slice(0, 6);
 }
 
 function initGrid(side) {
@@ -126,7 +143,6 @@ function renderResultText() {
  */
 
 function createMenuButtons() {
-  // 모드 버튼 1: 알록달록
   modeBtn1 = createButton('알록달록');
   modeBtn1.position(20, 20);
   styleMenuButton(modeBtn1);
@@ -135,18 +151,14 @@ function createMenuButtons() {
     initGrid('all');
   });
 
-  // 모드 버튼 2: 단색 모드 (준비중)
   modeBtn2 = createButton('단색 모드');
-  modeBtn2.position(150, 20); // 알록달록 버튼 옆에 배치
+  modeBtn2.position(150, 20);
   styleMenuButton(modeBtn2);
   modeBtn2.mousePressed(() => {
-    // 현재는 알림창만 띄우거나 모드 이름만 변경
-    alert("단색 모드는 아직 준비 중입니다!");
-    updatePalette('monochrome');
+    updatePalette('monochrome'); // 이제 실제로 작동합니다!
     initGrid('all');
   });
 
-  // 크기 버튼
   for (let i = 4; i <= 6; i++) {
     let bSize = createButton(i + 'x' + i);
     bSize.position(20 + (i - 4) * 130, 75);
