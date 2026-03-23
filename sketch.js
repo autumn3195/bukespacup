@@ -1,25 +1,24 @@
-let leftGrid = [];  // 왼쪽 격자 색상 데이터
-let rightGrid = []; // 오른쪽 격자 색상 데이터
-let rows = 4, cols = 4;           // 격자 행/열 개수
-let currentColorMode = 4;         // 현재 설정된 색상 수
-let colors = [];                  // 현재 사용 중인 색상 팔레트
-let showResult = false;           // 정답 표시 여부
+let leftGrid = [];  
+let rightGrid = []; 
+let rows = 4, cols = 4;           
+let currentColorMode = "알록달록";   
+let colors = [];                  
+let showResult = false;           
 
-// UI 요소
-let btnL, btnR, btnC;             // 하단 컨트롤 버튼
-let colorBtns = [], sizeBtns = []; // 상단 설정 버튼 배열
+let btnL, btnR, btnC;             
+let modeBtn1, modeBtn2, sizeBtns = []; 
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   
-  // 1. 초기 환경 설정 (Default: 4색, 4x4)
-  updatePalette(4);
+  // 1. 초기 환경 설정 (Default: 알록달록 6색, 4x4)
+  updatePalette('colorful');
   initGrid('all');
 
-  // 2. 상단 메뉴 버튼 생성 (색상 모드 및 격자 크기)
+  // 2. 상단 메뉴 버튼 생성
   createMenuButtons();
 
-  // 3. 하단 컨트롤 버튼 생성 및 초기 위치 설정
+  // 3. 하단 컨트롤 버튼 생성
   setupControlButtons();
   positionButtons();
 }
@@ -28,13 +27,22 @@ function setup() {
  * 1. 데이터 관리 함수
  */
 
-// 색상 팔레트 업데이트 (Hex 코드로 안전하게 관리)
-function updatePalette(num) {
-  const fullPalette = ['#FF4B4B', '#4BFF4B', '#4B4BFF', '#FFFF4B', '#FF4BFF', '#FFFFFF'];
-  colors = fullPalette.slice(0, num);
+function updatePalette(mode) {
+  let fullPalette;
+  
+  if (mode === 'colorful') {
+    // 알록달록 모드: 6가지 서로 다른 색상
+    fullPalette = ['#FF4B4B', '#4BFF4B', '#4B4BFF', '#FFFF4B', '#FF4BFF', '#FFFFFF'];
+    currentColorMode = "알록달록";
+  } else if (mode === 'monochrome') {
+    // 단색 모드: (추후 구현 예정 - 현재는 알록달록과 동일하게 설정하거나 비워둠)
+    fullPalette = ['#FF4B4B', '#4BFF4B', '#4B4BFF', '#FFFF4B', '#FF4BFF', '#FFFFFF'];
+    currentColorMode = "단색 모드 (준비중)";
+  }
+  
+  colors = fullPalette.slice(0, 6);
 }
 
-// 격자 데이터 무작위 생성
 function initGrid(side) {
   if (side === 'all') {
     initGrid('left');
@@ -46,12 +54,11 @@ function initGrid(side) {
   for (let i = 0; i < rows * cols; i++) {
     target.push(random(colors));
   }
-  showResult = false; // 데이터가 바뀌면 정답은 항상 숨김
+  showResult = false;
   if (btnC) btnC.html('정답 확인');
   redraw();
 }
 
-// 두 격자의 색상을 비교하여 다른 칸의 개수 반환
 function checkDiff() {
   let count = 0;
   for (let i = 0; i < leftGrid.length; i++) {
@@ -67,28 +74,23 @@ function checkDiff() {
 function draw() {
   background(225);
 
-  // 상단 우측 정보창 표시
   renderInfoText();
 
-  // 중앙 격자 영역 계산 (상단/하단 영역 침범 방지)
-  let availableHeight = height - 350; // 상단 메뉴(150px) + 하단 공간(200px) 제외
+  let availableHeight = height - 350; 
   let gridSize = min(width * 0.35, availableHeight * 0.9); 
   let spacing = 100;
   let startX = (width - (gridSize * 2 + spacing)) / 2;
   let startY = 150 + (availableHeight - gridSize) / 2; 
 
-  // 격자 그리기
   renderGrid(startX, startY, gridSize, leftGrid);
   renderGrid(startX + gridSize + spacing, startY, gridSize, rightGrid);
 
-  // 정답 텍스트 표시
   if (showResult) {
     renderResultText();
   }
   noLoop();
 }
 
-// 격자 렌더링
 function renderGrid(x, y, size, data) {
   let cellSize = size / cols;
   strokeWeight(5); stroke(0);
@@ -103,20 +105,18 @@ function renderGrid(x, y, size, data) {
   }
 }
 
-// 우측 상단 현재 모드 텍스트
 function renderInfoText() {
   push();
   fill(80); noStroke(); textSize(18); textAlign(RIGHT, TOP);
-  text(`색상: ${currentColorMode}색 모드`, width - 20, 25);
+  text(`모드: ${currentColorMode}`, width - 20, 25);
   text(`크기: ${rows}x${cols}`, width - 20, 50);
   pop();
 }
 
-// 하단 중앙 정답 텍스트
 function renderResultText() {
   let diff = checkDiff();
   push();
-  fill(255, 50, 50); noStroke(); textSize(32); textStyle(BOLD); textAlign(CENTER, CENTER);
+  fill(255, 50, 50); noStroke(); textSize(36); textStyle(BOLD); textAlign(CENTER, CENTER);
   text("정답: " + diff, width / 2, height - 160); 
   pop();
 }
@@ -126,18 +126,33 @@ function renderResultText() {
  */
 
 function createMenuButtons() {
+  // 모드 버튼 1: 알록달록
+  modeBtn1 = createButton('알록달록');
+  modeBtn1.position(20, 20);
+  styleMenuButton(modeBtn1);
+  modeBtn1.mousePressed(() => {
+    updatePalette('colorful');
+    initGrid('all');
+  });
+
+  // 모드 버튼 2: 단색 모드 (준비중)
+  modeBtn2 = createButton('단색 모드');
+  modeBtn2.position(150, 20); // 알록달록 버튼 옆에 배치
+  styleMenuButton(modeBtn2);
+  modeBtn2.mousePressed(() => {
+    // 현재는 알림창만 띄우거나 모드 이름만 변경
+    alert("단색 모드는 아직 준비 중입니다!");
+    updatePalette('monochrome');
+    initGrid('all');
+  });
+
+  // 크기 버튼
   for (let i = 4; i <= 6; i++) {
-    // 색상 버튼
-    let bColor = createButton(i + '색 모드');
-    bColor.position(20 + (i - 4) * 130, 20);
-    styleMenuButton(bColor);
-    bColor.mousePressed(() => { currentColorMode = i; updatePalette(i); initGrid('all'); });
-    
-    // 크기 버튼
     let bSize = createButton(i + 'x' + i);
     bSize.position(20 + (i - 4) * 130, 75);
     styleMenuButton(bSize);
     bSize.mousePressed(() => { rows = i; cols = i; initGrid('all'); });
+    sizeBtns.push(bSize);
   }
 }
 
